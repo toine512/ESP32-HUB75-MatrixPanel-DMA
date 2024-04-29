@@ -83,8 +83,8 @@ public:
         virtualResX = vmodule_cols * _panelResX;
         virtualResY = vmodule_rows * _panelResY;
 
-	_virtualResX = virtualResX;
-	_virtualResY = virtualResY;
+        _virtualResX = virtualResX;
+        _virtualResY = virtualResY;
 
         dmaResX = panelResX * vmodule_rows * vmodule_cols - 1;
 
@@ -101,7 +101,7 @@ public:
     // equivalent methods of the matrix library so it can be just swapped out.
     void drawPixel(int16_t x, int16_t y, uint16_t color);   // overwrite adafruit implementation
     void fillScreen(uint16_t color); 			// overwrite adafruit implementation
-    void setRotation(uint8_t rotate); 				// overwrite adafruit implementation
+    void setRotation(uint8_t rotate); 			// overwrite adafruit implementation
 
 	void fillScreenRGB888(uint8_t r, uint8_t g, uint8_t b);
     void clearScreen() { display->clearScreen(); }
@@ -343,7 +343,7 @@ inline VirtualCoords VirtualMatrixPanel::getCoords(int16_t virt_x, int16_t virt_
 	if (panel_scan_rate == FOUR_SCAN_64PX_HIGH)
 	{
 	    // https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/issues/345#issuecomment-1510401192
-	    if ((virt_y & 8) != ((virt_y & 16) >> 1)) { virt_y = (virt_y & 0b11000) ^ 0b11000 + (virt_y & 0b11100111); }
+	    if ((virt_y & 8) != ((virt_y & 16) >> 1)) { virt_y = (virt_y & 0b11000) ^ (0b11000 + (virt_y & 0b11100111)); }
 	}
 
 
