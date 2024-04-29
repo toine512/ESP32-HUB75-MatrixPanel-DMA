@@ -430,12 +430,6 @@ public:
     if (m_cfg.driver)
       shiftDriver(m_cfg);
 
-#if defined(SPIRAM_DMA_BUFFER)
-    // Trick library into dropping colour depth slightly when using PSRAM.
-    // Actual output clockrate override occurs in configureDMA
-    m_cfg.i2sspeed = HUB75_I2S_CFG::HZ_8M;
-#endif
-
     /* As DMA buffers are dynamically allocated, we must allocated in begin()
      * Ref: https://github.com/espressif/arduino-esp32/issues/831
      */

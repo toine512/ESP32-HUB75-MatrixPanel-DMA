@@ -289,9 +289,6 @@ void MatrixPanel_I2S_DMA::configureDMA(const HUB75_I2S_CFG &_cfg)
   bus_cfg.pin_d14 = -1;
   bus_cfg.pin_d15 = -1;
 
-#if defined(SPIRAM_DMA_BUFFER)
-  bus_cfg.psram_clk_override = true;
-#endif
 
   dma_bus.config(bus_cfg);
 
