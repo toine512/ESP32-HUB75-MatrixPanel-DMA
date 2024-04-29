@@ -1,5 +1,5 @@
 /*
-  Various LED Driver chips might need some specific code for initialisation/control logic 
+  Various LED Driver chips might need some specific code for initialisation/control logic
 
 */
 
@@ -19,7 +19,7 @@
  * @brief - pre-init procedures for specific led-drivers
  * this method is called before DMA/I2S setup while GPIOs
  * aint yet assigned for DMA operation
- * 
+ *
  */
 void MatrixPanel_I2S_DMA::shiftDriver(const HUB75_I2S_CFG& _cfg){
     switch (_cfg.driver){

@@ -135,10 +135,10 @@ struct rowBitStruct
   const bool double_buff;
   ESP32_I2S_DMA_STORAGE_TYPE *data;
 
-  /** @brief 
+  /** @brief
    * Returns size (in bytes) of row of data vectorfor a SINGLE buff for the number of colour depths requested
-   * 
-   * default - Returns full data vector size for a SINGLE buff. 
+   *
+   * default - Returns full data vector size for a SINGLE buff.
    *           You should only pass either PIXEL_COLOR_DEPTH_BITS or '1' to this
    *
    */
@@ -151,7 +151,7 @@ struct rowBitStruct
 
   /** @brief
    * Returns pointer to the row's data vector beginning at pixel[0] for _dpth colour bit
-   * 
+   *
    * NOTE: this call might be very slow in loops. Due to poor instruction caching in esp32 it might be required a reread from flash
    * every loop cycle, better use inlined #define instead in such cases
    */
@@ -491,7 +491,7 @@ public:
   {
     uint8_t r, g, b;
     color565to888(color, r, g, b);
-    
+
     int16_t w = 1;
     transform(x, y, w, h);
     if (h > w)
@@ -547,18 +547,18 @@ public:
   {
     uint8_t r, g, b;
     color565to888(color, r, g, b);
-    
+
     transform(x, y, w, h);
     fillRectDMA(x, y, w, h, r, g, b);
-    
+
   }
   // rgb888 overload
   virtual inline void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t r, uint8_t g, uint8_t b)
   {
-    
+
     transform(x, y, w, h);
     fillRectDMA(x, y, w, h, r, g, b);
-    
+
   }
 #endif
 
@@ -600,15 +600,15 @@ public:
     {
       return;
     }
-	
+
     dma_bus.flip_dma_output_buffer(back_buffer_id);
-	
+
 	//back_buffer_id ^= 1;
 	back_buffer_id = back_buffer_id^1;
-    fb = &frame_buffer[back_buffer_id];	
-	
+    fb = &frame_buffer[back_buffer_id];
 
-	
+
+
   }
 
   /**
@@ -713,12 +713,12 @@ protected:
    */
   inline void resetbuffers()
   {
-    clearFrameBuffer(0);        
-    brtCtrlOEv2(brightness, 0); 
+    clearFrameBuffer(0);
+    brtCtrlOEv2(brightness, 0);
 
     if (m_cfg.double_buff) {
-		
-      clearFrameBuffer(1);        
+
+      clearFrameBuffer(1);
       brtCtrlOEv2(brightness, 1);
 
     }

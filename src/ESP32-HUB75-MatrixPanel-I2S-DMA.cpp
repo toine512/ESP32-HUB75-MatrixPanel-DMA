@@ -70,9 +70,9 @@ bool MatrixPanel_I2S_DMA::allocateDMAmemory()
   ESP_LOGI("I2S-DMA", "Allocating %d bytes memory for DMA BCM framebuffer(s).", allocated_fb_memory);
 
   // calculate the lowest LSBMSB_TRANSITION_BIT value that will fit in memory that will meet or exceed the configured refresh rate
-  
+
 //#define FORCE_COLOR_DEPTH 1
-  
+
 #if !defined(FORCE_COLOR_DEPTH)
 
   ESP_LOGI("I2S-DMA", "Minimum visual refresh rate (scan rate from panel top to bottom) requested: %d Hz", m_cfg.min_refresh_rate);
@@ -163,13 +163,13 @@ bool MatrixPanel_I2S_DMA::allocateDMAmemory()
 
 
 /*
-// Version 2.0 March 2023 
+// Version 2.0 March 2023
 int MatrixPanel_I2S_DMA::create_descriptor_links(void *data, size_t size, bool dmadesc_b, bool countonly)
 {
     int len = size;
     uint8_t *data2 = (uint8_t *)data;
 
-    int n = 0;    
+    int n = 0;
     while (len)
     {
         int dmalen = len;
@@ -177,7 +177,7 @@ int MatrixPanel_I2S_DMA::create_descriptor_links(void *data, size_t size, bool d
             dmalen = DMA_MAX;
 
           if (!countonly)
-            dma_bus.create_dma_desc_link(data2, dmalen, dmadesc_b);                
+            dma_bus.create_dma_desc_link(data2, dmalen, dmadesc_b);
 
         len -= dmalen;
         data2 += dmalen;
@@ -204,7 +204,7 @@ void MatrixPanel_I2S_DMA::configureDMA(const HUB75_I2S_CFG &_cfg)
   */
 
 
- // Fill DMA linked lists for both frames (as in, halves of the HUB75 panel) in sequence (top to bottom) 
+ // Fill DMA linked lists for both frames (as in, halves of the HUB75 panel) in sequence (top to bottom)
   for (int row = 0; row < ROWS_PER_FRAME; row++)
   {
     // first set of data is LSB through MSB, single pass (IF TOTAL SIZE < DMA_MAX) - all colour bits are displayed once, which takes care of everything below and including LSBMSB_TRANSITION_BIT
@@ -515,7 +515,7 @@ void MatrixPanel_I2S_DMA::clearFrameBuffer(bool _buff_id)
         // https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA/issues/164
         row[x_pixel] = abcde & (0x18 << BITS_ADDR_OFFSET); // mask out the bottom 3 bits which are the clk di bk inputs
       }
-      else if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368) 
+      else if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368)
       {
         row[ESP32_TX_FIFO_POSITION_ADJUST(x_pixel)] = 0x0000;
       }
@@ -539,7 +539,7 @@ void MatrixPanel_I2S_DMA::clearFrameBuffer(bool _buff_id)
         // https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA/issues/164
         row[x_pixel] = abcde & (0x18 << BITS_ADDR_OFFSET); // mask out the bottom 3 bits which are the clk di bk inputs
       }
-      else if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368) 
+      else if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368)
       {
         row[ESP32_TX_FIFO_POSITION_ADJUST(x_pixel)] = 0x0000;
       }
@@ -568,7 +568,7 @@ void MatrixPanel_I2S_DMA::clearFrameBuffer(bool _buff_id)
     } // end SM5266P
 
     // row selection for SM5368 shift regs with ABC-only addressing. A is row clk, B is BK and C is row data
-    if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368) 
+    if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368)
     {
       x_pixel = fb->rowBits[row_idx]->width - 1;                                                                        // last pixel in first block)
       uint16_t c = (row_idx == 0) ? BIT_C : 0x0000;                                                                     // set row data (C) when row==0, then push through shift regs for all other rows
@@ -587,12 +587,12 @@ void MatrixPanel_I2S_DMA::clearFrameBuffer(bool _buff_id)
       row = fb->rowBits[row_idx]->getDataPtr(colouridx, -1);
 
       // DP3246 needs the latch high for 3 clock cycles, so start 2 cycles earlier
-      if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368) 
+      if (m_cfg.driver == HUB75_I2S_CFG::DP3246_SM5368)
       {
-        row[ESP32_TX_FIFO_POSITION_ADJUST(fb->rowBits[row_idx]->width - 3)] |= BIT_LAT;   // DP3246 needs 3 clock cycle latch 
-        row[ESP32_TX_FIFO_POSITION_ADJUST(fb->rowBits[row_idx]->width - 2)] |= BIT_LAT;   // DP3246 needs 3 clock cycle latch 
+        row[ESP32_TX_FIFO_POSITION_ADJUST(fb->rowBits[row_idx]->width - 3)] |= BIT_LAT;   // DP3246 needs 3 clock cycle latch
+        row[ESP32_TX_FIFO_POSITION_ADJUST(fb->rowBits[row_idx]->width - 2)] |= BIT_LAT;   // DP3246 needs 3 clock cycle latch
       } // DP3246_SM5368
-      
+
       row[ESP32_TX_FIFO_POSITION_ADJUST(fb->rowBits[row_idx]->width - 1)] |= BIT_LAT; // -1 pixel to compensate array index starting at 0
 
       // ESP32_TX_FIFO_POSITION_ADJUST(dma_buff.rowBits[row_idx]->width - 1)

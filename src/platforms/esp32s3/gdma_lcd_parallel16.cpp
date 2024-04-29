@@ -8,9 +8,9 @@
 
 
  FULL CREDIT goes to AdaFruit and  https://github.com/PaintYourDragon
- 
+
  https://blog.adafruit.com/2022/06/21/esp32uesday-more-s3-lcd-peripheral-hacking-with-code/
- 
+
  https://github.com/adafruit/Adafruit_Protomatter/blob/master/src/arch/esp32-s3.h
 
  PLEASE SUPPORT THEM!
@@ -30,33 +30,33 @@
 /*
   dma_descriptor_t desc;          // DMA descriptor for testing
 
-  uint8_t data[8][312];           // Transmit buffer (2496 bytes total)  
+  uint8_t data[8][312];           // Transmit buffer (2496 bytes total)
   uint16_t* dmabuff2;
 */
 
   DRAM_ATTR volatile bool previousBufferFree = true;
- 
+
   // End-of-DMA-transfer callback
   IRAM_ATTR bool gdma_on_trans_eof_callback(gdma_channel_handle_t dma_chan,
                                     gdma_event_data_t *event_data, void *user_data) {
-                                        
+
   // This DMA callback seems to trigger a moment before the last data has
   // issued (buffering between DMA & LCD peripheral?), so pause a moment
   // before stopping LCD data out. The ideal delay may depend on the LCD
   // clock rate...this one was determined empirically by monitoring on a
   // logic analyzer. YMMV.
-    esp_rom_delay_us(100);        
+    esp_rom_delay_us(100);
   // The LCD peripheral stops transmitting at the end of the DMA xfer, but
   // clear the lcd_start flag anyway -- we poll it in loop() to decide when
   // the transfer has finished, and the same flag is set later to trigger
   // the next transfer.
 
     //LCD_CAM.lcd_user.lcd_start = 0;
-    
+
     previousBufferFree = true;
-    
+
     return true;
-  }  
+  }
 
   lcd_cam_dev_t* getDev()
   {
@@ -87,7 +87,7 @@
     esp_rom_delay_us(1000);
 
 //    uint32_t lcd_clkm_div_num = ((160000000 + 1) / _cfg.bus_freq);
-//    ESP_LOGI("", "Clock divider is %d", lcd_clkm_div_num);     
+//    ESP_LOGI("", "Clock divider is %d", lcd_clkm_div_num);
 
     // Configure LCD clock. Since this program generates human-perceptible
     // output and not data for LED matrices or NeoPixels, use almost the
@@ -100,32 +100,32 @@
 
     // LCD_CAM_LCD_CLK_SEL Select LCD module source clock. 0: clock source is disabled. 1: XTAL_CLK. 2: PLL_D2_CLK. 3: PLL_F160M_CLK. (R/W)
     LCD_CAM.lcd_clock.lcd_clk_sel = 3;        // Use 160Mhz Clock Source
-    
+
     LCD_CAM.lcd_clock.lcd_ck_out_edge = 0;    // PCLK low in 1st half cycle
     LCD_CAM.lcd_clock.lcd_ck_idle_edge = 0;   // PCLK low idle
-    
+
     LCD_CAM.lcd_clock.lcd_clkcnt_n = 1; // Should never be zero
-    
-    //LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 0; // PCLK = CLK / (CLKCNT_N+1)    
+
+    //LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 0; // PCLK = CLK / (CLKCNT_N+1)
     LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 1; // PCLK = CLK / 1 (... so 160Mhz still)
 
 
     // https://esp32.com/viewtopic.php?f=5&t=24459&start=80#p94487
-    /* Re: ESP32-S3 LCD and I2S FULL documentation 
+    /* Re: ESP32-S3 LCD and I2S FULL documentation
      *  by ESP_Sprite » Fri Mar 25, 2022 2:06 am
      *
-     *  Are you sure you are staying within the limits of the psram throughput? If GDMA can't fetch data fast 
-     *  enough it leads to corruption. Also keep in mind that worst case scenario, the gdma can only use half of 
+     *  Are you sure you are staying within the limits of the psram throughput? If GDMA can't fetch data fast
+     *  enough it leads to corruption. Also keep in mind that worst case scenario, the gdma can only use half of
      *  the bandwidth of the psram peripheral (as it's round-robin shared with the CPUs).
-     */ 
-     
+     */
+
     // Fastest speed I can get with Octoal PSRAM to work before nothing shows. Based on manual testing.
-    // If using an ESP32-S3 with slower (half the bandwidth) Q-SPI (Quad), then the divisor will need to be '20' (8Mhz) which wil be flickery! 
-    if (_cfg.psram_clk_override) 
+    // If using an ESP32-S3 with slower (half the bandwidth) Q-SPI (Quad), then the divisor will need to be '20' (8Mhz) which wil be flickery!
+    if (_cfg.psram_clk_override)
     {
-        ESP_LOGI("S3", "DMA buffer is on PSRAM. Limiting clockspeed....");   
+        ESP_LOGI("S3", "DMA buffer is on PSRAM. Limiting clockspeed....");
         //LCD_CAM.lcd_clock.lcd_clkm_div_num = 10; //16mhz is the fasted the Octal PSRAM can support it seems from faptastic's testing using an N8R8 variant (Octal SPI PSRAM).
-        
+
         // https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/issues/441#issuecomment-1513631890
         LCD_CAM.lcd_clock.lcd_clkm_div_num = 12; // 13Mhz is the fastest when the DMA memory is needed to service other peripherals as well.
     }
@@ -134,26 +134,26 @@
 
       auto  freq     = (_cfg.bus_freq);
 
-      auto  _div_num = 8; // 20Mhz 
+      auto  _div_num = 8; // 20Mhz
       if (freq < 20000000L) {
             _div_num = 12; // 13Mhz
       }
       else if (freq > 20000000L) {
-            _div_num = 6; // 26Mhz --- likely to have noise without a good connection         
+            _div_num = 6; // 26Mhz --- likely to have noise without a good connection
       }
 
-      //LCD_CAM.lcd_clock.lcd_clkm_div_num = lcd_clkm_div_num;      
-      LCD_CAM.lcd_clock.lcd_clkm_div_num = _div_num; //3;      
+      //LCD_CAM.lcd_clock.lcd_clkm_div_num = lcd_clkm_div_num;
+      LCD_CAM.lcd_clock.lcd_clkm_div_num = _div_num; //3;
 
     }
 
     ESP_LOGI("S3", "Clock divider is %d", (int)LCD_CAM.lcd_clock.lcd_clkm_div_num);
-    ESP_LOGD("S3", "Resulting output clock frequency: %d Mhz",  (int)(160000000L/LCD_CAM.lcd_clock.lcd_clkm_div_num)); 
+    ESP_LOGD("S3", "Resulting output clock frequency: %d Mhz",  (int)(160000000L/LCD_CAM.lcd_clock.lcd_clkm_div_num));
 
 
     LCD_CAM.lcd_clock.lcd_clkm_div_a = 1;     // 0/1 fractional divide
     LCD_CAM.lcd_clock.lcd_clkm_div_b = 0;
-    
+
     // See section 26.3.3.1 of the ESP32­S3 Technical Reference Manual
     // for information on other clock sources and dividers.
 
@@ -165,7 +165,7 @@
     LCD_CAM.lcd_misc.lcd_next_frame_en = 0;  // Do NOT auto-frame
 
     LCD_CAM.lcd_misc.lcd_bk_en = 1;          // https://esp32.com/viewtopic.php?t=24459&start=60#p91835
-    
+
     LCD_CAM.lcd_data_dout_mode.val = 0;      // No data delays
     LCD_CAM.lcd_user.lcd_always_out_en = 1;  // Enable 'always out' mode
     LCD_CAM.lcd_user.lcd_8bits_order = 0;    // Do not swap bytes
@@ -188,14 +188,14 @@
     // transfers need DMA linked lists, not used here but mentioned later.
 
     // Route 8 LCD data signals to GPIO pins
-    int8_t* pins = _cfg.pin_data;  
+    int8_t* pins = _cfg.pin_data;
 
-    for(int i = 0; i < 16; i++) 
+    for(int i = 0; i < 16; i++)
     {
       if (pins[i] >= 0) { // -1 value will CRASH the ESP32!
         esp_rom_gpio_connect_out_signal(pins[i], LCD_DATA_OUT0_IDX + i, false, false);
         gpio_hal_iomux_func_sel(GPIO_PIN_MUX_REG[pins[i]], PIN_FUNC_GPIO);
-        gpio_set_drive_capability((gpio_num_t)pins[i], (gpio_drive_cap_t)3);    
+        gpio_set_drive_capability((gpio_num_t)pins[i], (gpio_drive_cap_t)3);
       }
     }
 
@@ -222,7 +222,7 @@
     // Clock
       esp_rom_gpio_connect_out_signal(_cfg.pin_wr,  LCD_PCLK_IDX, _cfg.invert_pclk, false);
       gpio_hal_iomux_func_sel(GPIO_PIN_MUX_REG[_cfg.pin_wr], PIN_FUNC_GPIO);
-      gpio_set_drive_capability((gpio_num_t)_cfg.pin_wr, (gpio_drive_cap_t)3);  
+      gpio_set_drive_capability((gpio_num_t)_cfg.pin_wr, (gpio_drive_cap_t)3);
 
     // This program has a known fixed-size data buffer (2496 bytes) that fits
     // in a single DMA descriptor (max 4095 bytes). Large transfers would
@@ -233,7 +233,7 @@
     desc.dw0.suc_eof = 0; // Last descriptor
     desc.next = &desc;     // No linked list
 */
-   
+
     // Remaining descriptor elements are initialized before each DMA transfer.
 
     // Allocate DMA channel and connect it to the LCD peripheral
@@ -256,12 +256,12 @@
         .sram_trans_align = 32,
         .psram_trans_align = 64,
     };
-    gdma_set_transfer_ability(dma_chan, &ability);    
+    gdma_set_transfer_ability(dma_chan, &ability);
 
     // Enable DMA transfer callback
     static gdma_tx_event_callbacks_t tx_cbs = {
        // .on_trans_eof is literally the only gdma tx event type available
-      .on_trans_eof = gdma_on_trans_eof_callback 
+      .on_trans_eof = gdma_on_trans_eof_callback
     };
     gdma_register_tx_event_callbacks(dma_chan, &tx_cbs, NULL);
 
@@ -275,7 +275,7 @@
     // a clean start on the next LCD transfer:
     gdma_reset(dma_chan);                 // Reset DMA to known state
     esp_rom_delay_us(1000);
-     
+
     LCD_CAM.lcd_user.lcd_dout        = 1; // Enable data out
     LCD_CAM.lcd_user.lcd_update      = 1; // Update registers
     LCD_CAM.lcd_misc.lcd_afifo_reset = 1; // Reset LCD TX FIFO
@@ -302,7 +302,7 @@
 
   void Bus_Parallel16::enable_double_dma_desc(void)
   {
-        ESP_LOGI("S3", "Enabled support for secondary DMA buffer.");    
+        ESP_LOGI("S3", "Enabled support for secondary DMA buffer.");
        _double_dma_buffer = true;
   }
 
@@ -312,10 +312,10 @@
     if (_dmadesc_a) heap_caps_free(_dmadesc_a); // free all dma descrptios previously
     _dmadesc_count = len;
 
-    ESP_LOGD("S3", "Allocating %d bytes memory for DMA descriptors.", (int)sizeof(HUB75_DMA_DESCRIPTOR_T) * len);        
+    ESP_LOGD("S3", "Allocating %d bytes memory for DMA descriptors.", (int)sizeof(HUB75_DMA_DESCRIPTOR_T) * len);
 
     _dmadesc_a= (HUB75_DMA_DESCRIPTOR_T*)heap_caps_malloc(sizeof(HUB75_DMA_DESCRIPTOR_T) * len, MALLOC_CAP_DMA);
-  
+
     if (_dmadesc_a == nullptr)
     {
       ESP_LOGE("S3", "ERROR: Couldn't malloc _dmadesc_a. Not enough memory.");
@@ -325,7 +325,7 @@
     if (_double_dma_buffer)
     {
       _dmadesc_b= (HUB75_DMA_DESCRIPTOR_T*)heap_caps_malloc(sizeof(HUB75_DMA_DESCRIPTOR_T) * len, MALLOC_CAP_DMA);
-    
+
       if (_dmadesc_b == nullptr)
       {
         ESP_LOGE("S3", "ERROR: Couldn't malloc _dmadesc_b. Not enough memory.");
@@ -333,7 +333,7 @@
       }
     }
 
-    /// override static 
+    /// override static
     _dmadesc_a_idx = 0;
     _dmadesc_b_idx = 0;
 
@@ -347,23 +347,23 @@
 
     if (size > MAX_DMA_LEN) {
       size = MAX_DMA_LEN;
-      ESP_LOGW("S3", "Creating DMA descriptor which links to payload with size greater than MAX_DMA_LEN!");            
+      ESP_LOGW("S3", "Creating DMA descriptor which links to payload with size greater than MAX_DMA_LEN!");
     }
 
     if ( dmadesc_b == true)
     {
 
       _dmadesc_b[_dmadesc_b_idx].dw0.owner = DMA_DESCRIPTOR_BUFFER_OWNER_DMA;
-      //_dmadesc_b[_dmadesc_b_idx].dw0.suc_eof = 0;   
+      //_dmadesc_b[_dmadesc_b_idx].dw0.suc_eof = 0;
       _dmadesc_b[_dmadesc_b_idx].dw0.suc_eof = (_dmadesc_b_idx == (_dmadesc_count-1));
       _dmadesc_b[_dmadesc_b_idx].dw0.size = _dmadesc_b[_dmadesc_b_idx].dw0.length = size; //sizeof(data);
       _dmadesc_b[_dmadesc_b_idx].buffer = data; //data;
 
       if (_dmadesc_b_idx == _dmadesc_count-1) {
-          _dmadesc_b[_dmadesc_b_idx].next =  (dma_descriptor_t *) &_dmadesc_b[0]; 
+          _dmadesc_b[_dmadesc_b_idx].next =  (dma_descriptor_t *) &_dmadesc_b[0];
       }
       else {
-          _dmadesc_b[_dmadesc_b_idx].next =  (dma_descriptor_t *) &_dmadesc_b[_dmadesc_b_idx+1]; 
+          _dmadesc_b[_dmadesc_b_idx].next =  (dma_descriptor_t *) &_dmadesc_b[_dmadesc_b_idx+1];
       }
 
       _dmadesc_b_idx++;
@@ -372,24 +372,24 @@
     }
     else
     {
-        
+
       if ( _dmadesc_a_idx >= _dmadesc_count)
       {
-        ESP_LOGE("S3", "Attempted to create more DMA descriptors than allocated. Expecting max %u descriptors.", (unsigned int)_dmadesc_count);          
+        ESP_LOGE("S3", "Attempted to create more DMA descriptors than allocated. Expecting max %u descriptors.", (unsigned int)_dmadesc_count);
         return;
       }
 
       _dmadesc_a[_dmadesc_a_idx].dw0.owner = DMA_DESCRIPTOR_BUFFER_OWNER_DMA;
       //_dmadesc_a[_dmadesc_a_idx].dw0.suc_eof = 0;
-      _dmadesc_a[_dmadesc_a_idx].dw0.suc_eof = (_dmadesc_a_idx == (_dmadesc_count-1));    
+      _dmadesc_a[_dmadesc_a_idx].dw0.suc_eof = (_dmadesc_a_idx == (_dmadesc_count-1));
       _dmadesc_a[_dmadesc_a_idx].dw0.size = _dmadesc_a[_dmadesc_a_idx].dw0.length = size; //sizeof(data);
       _dmadesc_a[_dmadesc_a_idx].buffer = data; //data;
 
       if (_dmadesc_a_idx == _dmadesc_count-1) {
-          _dmadesc_a[_dmadesc_a_idx].next =  (dma_descriptor_t *) &_dmadesc_a[0]; 
+          _dmadesc_a[_dmadesc_a_idx].next =  (dma_descriptor_t *) &_dmadesc_a[0];
       }
       else {
-          _dmadesc_a[_dmadesc_a_idx].next =  (dma_descriptor_t *) &_dmadesc_a[_dmadesc_a_idx+1]; 
+          _dmadesc_a[_dmadesc_a_idx].next =  (dma_descriptor_t *) &_dmadesc_a[_dmadesc_a_idx+1];
       }
 
       _dmadesc_a_idx++;
@@ -404,8 +404,8 @@
     gdma_start(dma_chan, (intptr_t)&_dmadesc_a[0]); // Start DMA w/updated descriptor(s)
     esp_rom_delay_us(100);              // Must 'bake' a moment before...
     LCD_CAM.lcd_user.lcd_start = 1;        // Trigger LCD DMA transfer
-    
-  } // end 
+
+  } // end
 
   void Bus_Parallel16::dma_transfer_stop()
   {
@@ -413,9 +413,9 @@
         LCD_CAM.lcd_user.lcd_reset = 1;        // Trigger LCD DMA transfer
         LCD_CAM.lcd_user.lcd_update = 1;        // Trigger LCD DMA transfer
 
-        gdma_stop(dma_chan);   
-        
-  } // end   
+        gdma_stop(dma_chan);
+
+  } // end
 
 
   void Bus_Parallel16::flip_dma_output_buffer(int back_buffer_id)
@@ -425,25 +425,25 @@
 
     if ( back_buffer_id == 1) // change across to everything 'b''
     {
-       _dmadesc_a[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_b[0];       
-       _dmadesc_b[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_b[0];       
+       _dmadesc_a[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_b[0];
+       _dmadesc_b[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_b[0];
     }
     else
     {
-       _dmadesc_b[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_a[0];       
-       _dmadesc_a[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_a[0];   
+       _dmadesc_b[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_a[0];
+       _dmadesc_a[_dmadesc_count-1].next =  (dma_descriptor_t *) &_dmadesc_a[0];
     }
 
     //current_back_buffer_id ^= 1;
-    
-    previousBufferFree = false;  
-    
-    //while (i2s_parallel_is_previous_buffer_free() == false) {}      
+
+    previousBufferFree = false;
+
+    //while (i2s_parallel_is_previous_buffer_free() == false) {}
     while (!previousBufferFree);
 
-        
 
-    
+
+
   } // end flip
 
 

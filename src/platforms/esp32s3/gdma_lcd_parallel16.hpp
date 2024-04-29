@@ -8,9 +8,9 @@
 
 
  FULL CREDIT goes to AdaFruit
- 
+
  https://blog.adafruit.com/2022/06/21/esp32uesday-more-s3-lcd-peripheral-hacking-with-code/
- 
+
  PLEASE SUPPORT THEM!
 
 
@@ -89,7 +89,7 @@
 
 //----------------------------------------------------------------------------
 
-  class Bus_Parallel16 
+  class Bus_Parallel16
   {
   public:
     Bus_Parallel16()
@@ -136,7 +136,7 @@
 
     const config_t& config(void) const { return _cfg; }
     void  config(const config_t& config);
-   
+
     bool init(void) ;
 
     void release(void) ;
@@ -155,19 +155,19 @@
 
     config_t _cfg;
 
-    volatile lcd_cam_dev_t* _dev;   
-    gdma_channel_handle_t dma_chan; 
+    volatile lcd_cam_dev_t* _dev;
+    gdma_channel_handle_t dma_chan;
 
     uint32_t _dmadesc_count  = 0;   // number of dma decriptors
-	
+
     uint32_t _dmadesc_a_idx  = 0;
     uint32_t _dmadesc_b_idx  = 0;
 
     HUB75_DMA_DESCRIPTOR_T* _dmadesc_a = nullptr;
-    HUB75_DMA_DESCRIPTOR_T* _dmadesc_b = nullptr;    
+    HUB75_DMA_DESCRIPTOR_T* _dmadesc_b = nullptr;
 
     bool    _double_dma_buffer = false;
-    //bool    _dmadesc_a_active   = true;    
+    //bool    _dmadesc_a_active   = true;
 
     esp_lcd_i80_bus_handle_t _i80_bus;
 

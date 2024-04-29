@@ -1,6 +1,6 @@
 # HUB75 RGB LED matrix panel library utilizing ESP32 DMA
 
-__[BUILD OPTIONS](/doc/BuildOptions.md) | [EXAMPLES](/examples/README.md)__ | [![PlatformIO CI](https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/actions/workflows/pio_arduino_build.yml/badge.svg)](https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/actions/workflows/pio_build.yml)
+__[BUILD OPTIONS](/doc/BuildOptions.md) | [EXAMPLES](/examples/README.md)__
 
 **Table of Content**
 
@@ -273,5 +273,3 @@ There are a number of great looking LED graphical display projects which leverag
 * And lots of others, let me know if I've missed you.
 
 If you want to donate money to the project, please refer to [this discussion](https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/discussions/349) about it. If you want to donate/buy an LED panel for the library author to improve compatibility and/or testing - please feel free to post in the same [discussion](https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/discussions/349).
-
-![It's better in real life](image.jpg)
