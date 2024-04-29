@@ -77,9 +77,6 @@
  #include <driver/periph_ctrl.h>
 #endif
 
-#if __has_include(<esp_arduino_version.h>)
- #include <esp_arduino_version.h>
-#endif
 
 #define DMA_MAX (4096-4)
 

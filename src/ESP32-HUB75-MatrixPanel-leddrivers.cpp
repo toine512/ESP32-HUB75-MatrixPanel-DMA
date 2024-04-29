@@ -5,12 +5,9 @@
 
 #include <driver/gpio.h>
 
-#ifdef ARDUINO_ARCH_ESP32
-  #include <Arduino.h>
-#else
-    #define LOW 0
-    #define HIGH 1
-#endif
+#define LOW 0
+#define HIGH 1
+
 #include "ESP32-HUB75-MatrixPanel-I2S-DMA.h"
 
 #define CLK_PULSE          gpio_set_level((gpio_num_t) _cfg.gpio.clk, HIGH); gpio_set_level((gpio_num_t) _cfg.gpio.clk, LOW);

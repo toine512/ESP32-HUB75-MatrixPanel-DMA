@@ -8,7 +8,6 @@
 #include <esp_log.h>
 #include "esp_attr.h"
 
-// #include <Arduino.h>
 #include "platforms/platform_detect.hpp"
 
 #ifdef USE_GFX_ROOT

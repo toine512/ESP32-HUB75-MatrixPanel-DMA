@@ -20,9 +20,6 @@
 // Stop compile errors: /src/platforms/esp32s3/gdma_lcd_parallel16.hpp:64:10: fatal error: hal/lcd_ll.h: No such file or directory
   #pragma message "Compiling for ESP32-S3"
 
-  #ifdef ARDUINO_ARCH_ESP32
-     #include <Arduino.h>
-  #endif
 
   #include "gdma_lcd_parallel16.hpp"
   #include "esp_attr.h"

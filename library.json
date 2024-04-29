@@ -12,7 +12,6 @@
         "url": "https://github.com/mrfaptastic/"
     },
     "frameworks": [
-        "arduino",
         "espidf"
     ],
     "platforms": [
