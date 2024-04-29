@@ -10,22 +10,12 @@
 
 #include "platforms/platform_detect.hpp"
 
-#ifdef USE_GFX_ROOT
-#include <FastLED.h>
-#include "GFX.h" // Adafruit GFX core class -> https://github.com/mrfaptastic/GFX_Root
-#elif !defined NO_GFX
-#include "Adafruit_GFX.h" // Adafruit class with all the other stuff
-#endif
 
 /*******************************************************************************************
  * COMPILE-TIME OPTIONS - MUST BE PROVIDED as part of PlatformIO project build_flags.      *
  * Changing the values just here won't work - as defines needs to persist beyond the scope *
  * of just this file.                                                                      *
  *******************************************************************************************/
-/* Do NOT build additional methods optimized for fast drawing,
- * i.e. Adafruits drawFastHLine, drawFastVLine, etc...                         */
-// #define NO_FAST_FUNCTIONS
-
 // #define NO_CIE1931
 
 /* Physical / Chained HUB75(s) RGB pixel WIDTH and HEIGHT.
@@ -361,16 +351,8 @@ private:
 }; // end of structure HUB75_I2S_CFG
 
 /***************************************************************************************/
-#ifdef USE_GFX_ROOT
-class MatrixPanel_I2S_DMA : public GFX
-{
-#elif !defined NO_GFX
-class MatrixPanel_I2S_DMA : public Adafruit_GFX
-{
-#else
 class MatrixPanel_I2S_DMA
 {
-#endif
 
   // ------- PUBLIC -------
 public:
@@ -381,11 +363,6 @@ public:
    *
    */
   MatrixPanel_I2S_DMA()
-#ifdef USE_GFX_ROOT
-      : GFX(MATRIX_WIDTH, MATRIX_HEIGHT)
-#elif !defined NO_GFX
-      : Adafruit_GFX(MATRIX_WIDTH, MATRIX_HEIGHT)
-#endif
   {
   }
 
@@ -396,11 +373,6 @@ public:
    *
    */
   MatrixPanel_I2S_DMA(const HUB75_I2S_CFG &opts)
-#ifdef USE_GFX_ROOT
-      : GFX(opts.mx_width * opts.chain_length, opts.mx_height)
-#elif !defined NO_GFX
-      : Adafruit_GFX(opts.mx_width * opts.chain_length, opts.mx_height)
-#endif
   {
     setCfg(opts);
   }
@@ -478,99 +450,8 @@ public:
    */
   inline void clearScreen() { updateMatrixDMABuffer(0, 0, 0); };
 
-#ifndef NO_FAST_FUNCTIONS
-  /**
-   * @brief - override Adafruit's FastVLine
-   * this works faster than multiple consecutive pixel by pixel drawPixel() call
-   */
-  virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
-  {
-    uint8_t r, g, b;
-    color565to888(color, r, g, b);
-
-    int16_t w = 1;
-    transform(x, y, w, h);
-    if (h > w)
-      vlineDMA(x, y, h, r, g, b);
-    else
-      hlineDMA(x, y, w, r, g, b);
-
-  }
-  // rgb888 overload
-  virtual inline void drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t r, uint8_t g, uint8_t b)
-  {
-    int16_t w = 1;
-    transform(x, y, w, h);
-    if (h > w)
-      vlineDMA(x, y, h, r, g, b);
-    else
-      hlineDMA(x, y, w, r, g, b);
-  };
-
-  /**
-   * @brief - override Adafruit's FastHLine
-   * this works faster than multiple consecutive pixel by pixel drawPixel() call
-   */
-  virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
-  {
-    uint8_t r, g, b;
-    color565to888(color, r, g, b);
-
-    int16_t h = 1;
-    transform(x, y, w, h);
-    if (h > w)
-      vlineDMA(x, y, h, r, g, b);
-    else
-      hlineDMA(x, y, w, r, g, b);
-
-  }
-  // rgb888 overload
-  virtual inline void drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t r, uint8_t g, uint8_t b)
-  {
-    int16_t h = 1;
-    transform(x, y, w, h);
-    if (h > w)
-      vlineDMA(x, y, h, r, g, b);
-    else
-      hlineDMA(x, y, w, r, g, b);
-  };
-
-  /**
-   * @brief - override Adafruit's fillRect
-   * this works much faster than multiple consecutive per-pixel drawPixel() calls
-   */
-  virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
-  {
-    uint8_t r, g, b;
-    color565to888(color, r, g, b);
-
-    transform(x, y, w, h);
-    fillRectDMA(x, y, w, h, r, g, b);
-
-  }
-  // rgb888 overload
-  virtual inline void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t r, uint8_t g, uint8_t b)
-  {
-
-    transform(x, y, w, h);
-    fillRectDMA(x, y, w, h, r, g, b);
-
-  }
-#endif
-
   void fillScreenRGB888(uint8_t r, uint8_t g, uint8_t b);
   void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b);
-
-#ifdef USE_GFX_ROOT
-  // 24bpp FASTLED CRGB colour struct support
-  void fillScreen(CRGB color);
-  void drawPixel(int16_t x, int16_t y, CRGB color);
-#endif
-
-#ifdef NO_GFX
-    inline int16_t width() const { return m_cfg.mx_width * m_cfg.chain_length; }
-    inline int16_t height() const { return m_cfg.mx_height; }
-#endif
 
   void drawIcon(int *ico, int16_t x, int16_t y, int16_t cols, int16_t rows);
 
@@ -720,36 +601,6 @@ protected:
     }
   }
 
-#ifndef NO_FAST_FUNCTIONS
-  /**
-   * @brief - update DMA buff drawing horizontal line at specified coordinates
-   * @param x_ccord - line start coordinate x
-   * @param y_ccord - line start coordinate y
-   * @param l - line length
-   * @param r,g,b, - RGB888 colour
-   */
-  void hlineDMA(int16_t x_coord, int16_t y_coord, int16_t l, uint8_t red, uint8_t green, uint8_t blue);
-
-  /**
-   * @brief - update DMA buff drawing horizontal line at specified coordinates
-   * @param x_ccord - line start coordinate x
-   * @param y_ccord - line start coordinate y
-   * @param l - line length
-   * @param r,g,b, - RGB888 colour
-   */
-  void vlineDMA(int16_t x_coord, int16_t y_coord, int16_t l, uint8_t red, uint8_t green, uint8_t blue);
-
-  /**
-   * @brief - update DMA buff drawing a rectangular at specified coordinates
-   * uses Fast H/V line draw internally, works faster than multiple consecutive pixel by pixel calls to updateMatrixDMABuffer()
-   * @param int16_t x, int16_t y - coordinates of a top-left corner
-   * @param int16_t w, int16_t h - width and height of a rectangular, min is 1 px
-   * @param uint8_t r - RGB888 colour
-   * @param uint8_t g - RGB888 colour
-   * @param uint8_t b - RGB888 colour
-   */
-  void fillRectDMA(int16_t x_coord, int16_t y_coord, int16_t w, int16_t h, uint8_t r, uint8_t g, uint8_t b);
-#endif
 
   // ------- PRIVATE -------
 private:
@@ -798,32 +649,6 @@ private:
    */
   void transform(int16_t &x, int16_t &y, int16_t &w, int16_t &h)
   {
-#ifndef NO_GFX
-    int16_t t;
-    switch (rotation)
-    {
-    case 1:
-      t = _height - 1 - y - (h - 1);
-      y = x;
-      x = t;
-      t = h;
-      h = w;
-      w = t;
-      return;
-    case 2:
-      x = _width - 1 - x - (w - 1);
-      y = _height - 1 - y - (h - 1);
-      return;
-    case 3:
-      t = y;
-      y = _width - 1 - x - (w - 1);
-      x = t;
-      t = h;
-      h = w;
-      w = t;
-      return;
-    }
-#endif
   };
 
 public:
@@ -918,21 +743,6 @@ inline void MatrixPanel_I2S_DMA::fillScreenRGB888(uint8_t r, uint8_t g, uint8_t 
 {
   updateMatrixDMABuffer(r, g, b); // RGB only (no pixel coordinate) version of 'updateMatrixDMABuffer'
 }
-
-#ifdef USE_GFX_ROOT
-// Support for CRGB values provided via FastLED
-inline void MatrixPanel_I2S_DMA::drawPixel(int16_t x, int16_t y, CRGB color)
-{
-  int16_t w = 1, h = 1;
-  transform(x, y, w, h);
-  updateMatrixDMABuffer(x, y, color.red, color.green, color.blue);
-}
-
-inline void MatrixPanel_I2S_DMA::fillScreen(CRGB color)
-{
-  updateMatrixDMABuffer(color.red, color.green, color.blue);
-}
-#endif
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed colour
 // https://github.com/squix78/ILI9341Buffer/blob/master/ILI9341_SPI.cpp
