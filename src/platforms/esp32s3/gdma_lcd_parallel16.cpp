@@ -96,7 +96,7 @@
     //LCD_CAM.lcd_clock.clk_en = 0;             // Enable peripheral clock
 
     // LCD_CAM_LCD_CLK_SEL Select LCD module source clock. 0: clock source is disabled. 1: XTAL_CLK. 2: PLL_D2_CLK. 3: PLL_F160M_CLK. (R/W)
-    LCD_CAM.lcd_clock.lcd_clk_sel = 3;        // Use 160Mhz Clock Source
+    LCD_CAM.lcd_clock.lcd_clk_sel = 2;        // Use main clock / 2 (120 MHz when full speed, which it should be)
 
     LCD_CAM.lcd_clock.lcd_ck_out_edge = 0;    // PCLK low in 1st half cycle
     LCD_CAM.lcd_clock.lcd_ck_idle_edge = 0;   // PCLK low idle
@@ -104,7 +104,7 @@
     LCD_CAM.lcd_clock.lcd_clkcnt_n = 1; // Should never be zero
 
     //LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 0; // PCLK = CLK / (CLKCNT_N+1)
-    LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 1; // PCLK = CLK / 1 (... so 160Mhz still)
+    LCD_CAM.lcd_clock.lcd_clk_equ_sysclk = 1; // PCLK = CLK / 1
 
 
     // https://esp32.com/viewtopic.php?f=5&t=24459&start=80#p94487
@@ -116,40 +116,13 @@
      *  the bandwidth of the psram peripheral (as it's round-robin shared with the CPUs).
      */
 
-    // Fastest speed I can get with Octoal PSRAM to work before nothing shows. Based on manual testing.
-    // If using an ESP32-S3 with slower (half the bandwidth) Q-SPI (Quad), then the divisor will need to be '20' (8Mhz) which wil be flickery!
-    if (_cfg.psram_clk_override)
-    {
-        ESP_LOGI("S3", "DMA buffer is on PSRAM. Limiting clockspeed....");
-        //LCD_CAM.lcd_clock.lcd_clkm_div_num = 10; //16mhz is the fasted the Octal PSRAM can support it seems from faptastic's testing using an N8R8 variant (Octal SPI PSRAM).
-
-        // https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/issues/441#issuecomment-1513631890
-        LCD_CAM.lcd_clock.lcd_clkm_div_num = 12; // 13Mhz is the fastest when the DMA memory is needed to service other peripherals as well.
-    }
-    else
-    {
-
-      auto  freq     = (_cfg.bus_freq);
-
-      auto  _div_num = 8; // 20Mhz
-      if (freq < 20000000L) {
-            _div_num = 12; // 13Mhz
-      }
-      else if (freq > 20000000L) {
-            _div_num = 6; // 26Mhz --- likely to have noise without a good connection
-      }
-
-      //LCD_CAM.lcd_clock.lcd_clkm_div_num = lcd_clkm_div_num;
-      LCD_CAM.lcd_clock.lcd_clkm_div_num = _div_num; //3;
-
-    }
-
-    ESP_LOGI("S3", "Clock divider is %d", (int)LCD_CAM.lcd_clock.lcd_clkm_div_num);
-    ESP_LOGD("S3", "Resulting output clock frequency: %d Mhz",  (int)(160000000L/LCD_CAM.lcd_clock.lcd_clkm_div_num));
+    //ESP_LOGI("S3", "Clock divider is %d", LCD_CAM.lcd_clock.lcd_clkm_div_num);
+    //ESP_LOGI("S3", "Resulting output clock frequency: %ld Mhz",  (160000000L/LCD_CAM.lcd_clock.lcd_clkm_div_num));
 
 
-    LCD_CAM.lcd_clock.lcd_clkm_div_a = 1;     // 0/1 fractional divide
-    LCD_CAM.lcd_clock.lcd_clkm_div_b = 0;
+    LCD_CAM.lcd_clock.lcd_clkm_div_num = 14;
+    LCD_CAM.lcd_clock.lcd_clkm_div_a = 21;
+    LCD_CAM.lcd_clock.lcd_clkm_div_b = 13;
 
     // See section 26.3.3.1 of the ESP32­S3 Technical Reference Manual
     // for information on other clock sources and dividers.
@@ -309,7 +282,7 @@
     if (_dmadesc_a) heap_caps_free(_dmadesc_a); // free all dma descrptios previously
     _dmadesc_count = len;
 
-    ESP_LOGD("S3", "Allocating %d bytes memory for DMA descriptors.", (int)sizeof(HUB75_DMA_DESCRIPTOR_T) * len);
+    ESP_LOGD("S3", "Allocating %d bytes memory for DMA descriptors.", sizeof(HUB75_DMA_DESCRIPTOR_T) * len);
 
     _dmadesc_a= (HUB75_DMA_DESCRIPTOR_T*)heap_caps_malloc(sizeof(HUB75_DMA_DESCRIPTOR_T) * len, MALLOC_CAP_DMA);
 
