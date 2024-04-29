@@ -79,7 +79,10 @@ bool MatrixPanel_I2S_DMA::allocateDMAmemory()
 
   while (1)
   {
-    int psPerClock = 1000000000000UL / m_cfg.i2sspeed;
+    // HERE
+    //int psPerClock = 1000000000000UL / m_cfg.i2sspeed;
+    int psPerClock = 1000000000000UL / 16711680L;
+    //int psPerClock = 1000000000000UL / 25067520L;
     int nsPerLatch = ((PIXELS_PER_ROW + CLKS_DURING_LATCH) * psPerClock) / 1000;
 
     // add time to shift out LSBs + LSB-MSB transition bit - this ignores fractions...
@@ -268,7 +271,10 @@ void MatrixPanel_I2S_DMA::configureDMA(const HUB75_I2S_CFG &_cfg)
   //
   auto bus_cfg = dma_bus.config(); // バス設定用の構造体を取得します。
 
-  bus_cfg.bus_freq    = m_cfg.i2sspeed;
+  // HERE
+  //bus_cfg.bus_freq    = m_cfg.i2sspeed;
+  bus_cfg.bus_freq    = 16711680L;
+  //bus_cfg.bus_freq    = 25067520L;
   bus_cfg.pin_wr      = m_cfg.gpio.clk;
   bus_cfg.invert_pclk = m_cfg.clkphase;
 
