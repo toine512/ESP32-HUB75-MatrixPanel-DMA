@@ -99,8 +99,9 @@
       // LCD_CAM peripheral number. No need to change (only 0 for ESP32-S3.)
       //int port = 0;
 
-      // max 40MHz (when in 16 bit / 2 byte mode)
-      uint32_t bus_freq = 10000000;
+      uint8_t clkdiv_num;
+      uint8_t clkdiv_a;
+      uint8_t clkdiv_b;
       int8_t pin_wr = -1;
       int8_t pin_rd = -1;
       int8_t pin_rs = -1;  // D/C

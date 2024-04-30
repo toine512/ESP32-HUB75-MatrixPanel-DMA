@@ -83,9 +83,6 @@
     LCD_CAM.lcd_user.lcd_reset = 1;
     esp_rom_delay_us(1000);
 
-//    uint32_t lcd_clkm_div_num = ((160000000 + 1) / _cfg.bus_freq);
-//    ESP_LOGI("", "Clock divider is %d", lcd_clkm_div_num);
-
     // Configure LCD clock. Since this program generates human-perceptible
     // output and not data for LED matrices or NeoPixels, use almost the
     // slowest LCD clock rate possible. The S3-mini module used on Feather
@@ -120,9 +117,9 @@
     //ESP_LOGI("S3", "Resulting output clock frequency: %ld Mhz",  (160000000L/LCD_CAM.lcd_clock.lcd_clkm_div_num));
 
 
-    LCD_CAM.lcd_clock.lcd_clkm_div_num = 14;
-    LCD_CAM.lcd_clock.lcd_clkm_div_a = 21;
-    LCD_CAM.lcd_clock.lcd_clkm_div_b = 13;
+    LCD_CAM.lcd_clock.lcd_clkm_div_num = _cfg.clkdiv_num;
+    LCD_CAM.lcd_clock.lcd_clkm_div_a = _cfg.clkdiv_a;
+    LCD_CAM.lcd_clock.lcd_clkm_div_b = _cfg.clkdiv_b;
 
     // See section 26.3.3.1 of the ESP32­S3 Technical Reference Manual
     // for information on other clock sources and dividers.

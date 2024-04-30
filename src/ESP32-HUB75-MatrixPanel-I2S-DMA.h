@@ -239,20 +239,10 @@ struct HUB75_I2S_CFG
     DP3246_SM5368
   };
 
-  /**
-   * I2S clock speed selector
-   */
-  enum clk_speed
-  {
-    HZ_8M = 8000000,
-    HZ_10M = 10000000,
-    HZ_15M = 15000000,
-    HZ_20M = 20000000
-  };
-
-  //
-  // Members must be in order of declaration or it breaks Arduino compiling due to strict checking.
-  //
+  uint8_t clkdiv_num;
+  uint8_t clkdiv_a;
+  uint8_t clkdiv_b;
+  uint32_t freq;
 
   // physical width of a single matrix panel module (in pixels, usually it is 64 ;) )
   uint16_t mx_width;
@@ -274,9 +264,6 @@ struct HUB75_I2S_CFG
 
   // use DMA double buffer (twice as much RAM required)
   bool double_buff;
-
-  // I2S clock speed
-  clk_speed i2sspeed;
 
   // How many clock cycles to blank OE before/after LAT signal change, default is 1 clock
   uint8_t latch_blanking;
@@ -302,6 +289,9 @@ struct HUB75_I2S_CFG
 
   // struct constructor
   HUB75_I2S_CFG(
+      uint8_t _num = 2,
+      uint8_t _a = 1,
+      uint8_t _b = 1,
       uint16_t _w = MATRIX_WIDTH,
       uint16_t _h = MATRIX_HEIGHT,
       uint16_t _chain = CHAIN_LENGTH,
@@ -309,9 +299,9 @@ struct HUB75_I2S_CFG
           R1_PIN_DEFAULT, G1_PIN_DEFAULT, B1_PIN_DEFAULT, R2_PIN_DEFAULT, G2_PIN_DEFAULT, B2_PIN_DEFAULT,
           A_PIN_DEFAULT, B_PIN_DEFAULT, C_PIN_DEFAULT, D_PIN_DEFAULT, E_PIN_DEFAULT,
           LAT_PIN_DEFAULT, OE_PIN_DEFAULT, CLK_PIN_DEFAULT},
-      shift_driver _drv = SHIFTREG, bool _dbuff = false, clk_speed _i2sspeed = HZ_15M,
+      shift_driver _drv = SHIFTREG, bool _dbuff = false,
       uint8_t _latblk = DEFAULT_LAT_BLANKING, // Anything > 1 seems to cause artefacts on ICS panels
-      bool _clockphase = true, uint16_t _min_refresh_rate = 60, uint8_t _pixel_color_depth_bits = PIXEL_COLOR_DEPTH_BITS_DEFAULT) : mx_width(_w), mx_height(_h), chain_length(_chain), gpio(_pinmap), driver(_drv), double_buff(_dbuff), i2sspeed(_i2sspeed), latch_blanking(_latblk), clkphase(_clockphase), min_refresh_rate(_min_refresh_rate)
+      bool _clockphase = true, uint16_t _min_refresh_rate = 60, uint8_t _pixel_color_depth_bits = PIXEL_COLOR_DEPTH_BITS_DEFAULT) : clkdiv_num(_num), clkdiv_a(_a), clkdiv_b(_b), freq(1), mx_width(_w), mx_height(_h), chain_length(_chain), gpio(_pinmap), driver(_drv), double_buff(_dbuff), latch_blanking(_latblk), clkphase(_clockphase), min_refresh_rate(_min_refresh_rate)
   {
     setPixelColorDepthBits(_pixel_color_depth_bits);
   }
@@ -548,6 +538,7 @@ public:
       return false;
 
     m_cfg = cfg;
+    m_cfg.freq = static_cast<uint32_t>( 240000000.0 / (static_cast<float>(m_cfg.clkdiv_num) + static_cast<float>(m_cfg.clkdiv_b) / static_cast<float>(m_cfg.clkdiv_a)) );
     PIXELS_PER_ROW = m_cfg.mx_width * m_cfg.chain_length;
     ROWS_PER_FRAME = m_cfg.mx_height / MATRIX_ROWS_IN_PARALLEL;
     MASK_OFFSET = 16 - m_cfg.getPixelColorDepthBits();
