@@ -631,16 +631,6 @@ private:
    */
   void brtCtrlOEv2(uint8_t brt, const int _buff_id = 0);
 
-  /**
-   * @brief - transforms coordinates according to orientation
-   * @param x - x position origin
-   * @param y - y position origin
-   * @param w - rectangular width
-   * @param h - rectangular height
-   */
-  void transform(int16_t &x, int16_t &y, int16_t &w, int16_t &h)
-  {
-  };
 
 public:
   /**
@@ -710,8 +700,6 @@ inline void MatrixPanel_I2S_DMA::drawPixel(int16_t x, int16_t y, uint16_t color)
   uint8_t r, g, b;
   color565to888(color, r, g, b);
 
-  int16_t w = 1, h = 1;
-  transform(x, y, w, h);
   updateMatrixDMABuffer(x, y, r, g, b);
 }
 
@@ -725,8 +713,6 @@ inline void MatrixPanel_I2S_DMA::fillScreen(uint16_t color) // adafruit virtual 
 
 inline void MatrixPanel_I2S_DMA::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b)
 {
-  int16_t w = 1, h = 1;
-  transform(x, y, w, h);
   updateMatrixDMABuffer(x, y, r, g, b);
 }
 
